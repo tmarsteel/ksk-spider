@@ -79,7 +79,14 @@ class Session private constructor(
         rangeSelectorInputs[0].`val`(from.format(dateFormatter))
         rangeSelectorInputs[1].`val`(to.format(dateFormatter))
 
-        val loadForm = rangeSelectorContainer.parent("form") as FormElement
+        var loadForm = rangeSelectorContainer.parent("form") as FormElement
+        val updatePageBtn = loadForm.selectFirst("#exportGroup").parent().selectFirst("div:first-of-type input[type=submit]")
+        currentPage = loadForm.submitByClicking(updatePageBtn)
+            .cookies(cookies)
+            .followRedirects(true)
+            .load()
+
+        loadForm = currentPage.document.getElementById("exportGroup").parent("form") as FormElement
         val exportToCSVCAMTBtn = loadForm.selectFirst("#exportGroup input[type=submit][value~=CSV-CAMT]")
 
         val csvInStream = loadForm.submitByClicking(exportToCSVCAMTBtn)
