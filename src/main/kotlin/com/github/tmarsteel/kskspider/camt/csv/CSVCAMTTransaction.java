@@ -30,7 +30,7 @@ public class CSVCAMTTransaction {
     @CsvCell(columnIndex = 4, required = true)
     private String comment;
 
-    @CsvCell(columnIndex = 5, required = true)
+    @CsvCell(columnIndex = 5)
     private String purpose;
 
     @CsvCell(columnIndex = 6)
