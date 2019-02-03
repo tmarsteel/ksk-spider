@@ -3,8 +3,11 @@ package com.github.tmarsteel.kskspider.transaction
 import com.github.tmarsteel.kskspider.MoneyAmount
 import com.github.tmarsteel.kskspider.account.AccountIdentifier
 import com.github.tmarsteel.kskspider.camt.csv.CSVCAMTTransaction
+import java.time.LocalDate
 
 data class TransactionDTO(
+    val postedAt: LocalDate,
+    val valuedAt: LocalDate,
     val owner: AccountIdentifier,
     val partner: AccountIdentifier,
     val partnerName: String?,
@@ -16,6 +19,8 @@ data class TransactionDTO(
     companion object {
         @JvmStatic
         fun fromCAMT(tx: CSVCAMTTransaction) = TransactionDTO(
+            tx.postedAt,
+            tx.valuedAt,
             tx.ownerIBAN,
             tx.partnerAccountID,
             tx.partnerName,
