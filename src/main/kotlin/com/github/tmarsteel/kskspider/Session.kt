@@ -20,6 +20,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
+import java.util.stream.Stream
 
 class Session private constructor(
     loginResult: LoadedPage
@@ -60,7 +61,7 @@ class Session private constructor(
         return getFinancialStatusInternal().map { it.second }
     }
 
-    fun getTransactionsInTimeRange(accountId: AccountIdentifier, from: LocalDate, to: LocalDate): List<TransactionDTO> {
+    fun getTransactionsInTimeRange(accountId: AccountIdentifier, from: LocalDate, to: LocalDate): Stream<TransactionDTO> {
         val accountWithTR = getFinancialStatusInternal().firstOrNull {
             it.second.accountId == accountId
         } ?: throw BankAccountNotFoundException(accountId)
@@ -95,11 +96,10 @@ class Session private constructor(
             .execute()
             .bodyStream()
 
-        val txs = csvInStream.use {
-            CsvClientImpl(InputStreamReader(csvInStream), CSVCAMTTransaction::class.java).readBeans()
-        }
-
-        return txs.map(TransactionDTO.Companion::fromCAMT)
+        val csvClient = CsvClientImpl(InputStreamReader(csvInStream), CSVCAMTTransaction::class.java)
+        return Stream.generate({ csvClient.readBean() })
+            .takeWhile { it != null }
+            .map(TransactionDTO.Companion::fromCAMT)
     }
 
     /**
