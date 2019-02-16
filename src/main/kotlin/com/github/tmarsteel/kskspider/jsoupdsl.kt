@@ -12,13 +12,6 @@ data class LoadedPage(
     val document: Document
 )
 
-fun Connection.load(): LoadedPage {
-    val response = execute()
-    val document = response.parse()
-
-    return LoadedPage(response, document)
-}
-
 fun Element.parent(cssSelector: String): Element? {
     var pivot: Element? = this
 

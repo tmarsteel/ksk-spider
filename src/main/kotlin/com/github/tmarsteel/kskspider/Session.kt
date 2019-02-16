@@ -69,10 +69,7 @@ class Session private constructor(
         val submitForTXs = accountWithTR.first.selectFirst("td:nth-of-type(5) div:nth-of-type(1) input[type=submit]")!!
         val accountActionsForm = accountWithTR.first.parent("form") as FormElement
 
-        currentPage = accountActionsForm.submitByClicking(submitForTXs)
-            .cookies(cookies)
-            .followRedirects(true)
-            .load()
+        currentPage = accountActionsForm.submitByClicking(submitForTXs).load()
 
         val rangeSelectorContainer = currentPage.document.getElementById("zeitraumKalender")!!
         val rangeSelectorInputs = rangeSelectorContainer.select("input[type=text]")
@@ -85,10 +82,7 @@ class Session private constructor(
             ?: return Stream.empty() // if there are no transactions in the selected time range, this element is missing
 
         val updatePageBtn = exportGroup.parent().selectFirst("div:first-of-type input[type=submit]")
-        currentPage = loadForm.submitByClicking(updatePageBtn)
-            .cookies(cookies)
-            .followRedirects(true)
-            .load()
+        currentPage = loadForm.submitByClicking(updatePageBtn).load()
 
         loadForm = currentPage.document.getElementById("exportGroup").parent("form") as FormElement
         val exportToCSVCAMTBtn = loadForm.selectFirst("#exportGroup input[type=submit][value~=CSV-CAMT]")
@@ -110,7 +104,7 @@ class Session private constructor(
      */
     private fun getFinancialStatusInternal(): Collection<Pair<Element, BankAccountFinancialStatusDTO>> {
         synchronized(mutex) {
-            navigate("/$currentLocale/home/onlinebanking/finanzstatus.html")
+            navigate("/$currentLocale/home/onlinebanking/finanzstatus.html?n=true&stref=hnav")
 
             val kontoTable = currentPage.document.selectFirst("caption#kontoTable").parent()
             return kontoTable.select("tbody tr").mapNotNull { tr ->
@@ -146,10 +140,7 @@ class Session private constructor(
 
             currentPage = logoutForm.submit()
                 .data(logoutButton.attr("name"), logoutButton.attr("value"))
-                .cookies(currentPage.response.cookies())
-                .followRedirects(true)
                 .load()
-
 
             closed = true
         }
@@ -180,7 +171,7 @@ class Session private constructor(
         return navigate(href)
     }
 
-    private fun navigate(target: String, force: Boolean = false): Document {
+    private fun navigate(target: String): Document {
         synchronized(mutex) {
             val currentURL = URL(currentPage.document.location())
 
@@ -200,21 +191,25 @@ class Session private constructor(
                 throw RuntimeException("Will not navigate off the bank host website! (Trying to navigate to ${targetURL.host})")
             }
 
-            if (currentURL.path == targetURL.path && !force) {
-                return currentPage.document
-            }
-
-            println("navigating... cookies of current response: ${currentPage.response.cookies()}")
             currentPage = Jsoup.connect(absTarget)
-                .cookies(currentPage.response.cookies())
-                .followRedirects(true)
+                .cookies(cookies)
                 .method(Connection.Method.GET)
                 .load()
 
-            println("navigated to $targetURL. cookies after navigate: ${currentPage.response.cookies()}")
-
             return currentPage.document
         }
+    }
+
+    private fun Connection.load(): LoadedPage {
+        followRedirects(true)
+        cookies(cookies)
+
+        val response = execute()
+        val document = response.parse()
+
+        cookies.putAll(response.cookies())
+
+        return LoadedPage(response, document)
     }
 
     companion object {
@@ -243,12 +238,12 @@ class Session private constructor(
             loginForm.selectFirst("input[type=text]:not([size=1])").`val`(credentials.username)
             loginForm.selectFirst("input[type=password]").`val`(credentials.pin)
 
-            val loginResult = loginForm.submit()
+            val loginResponse = loginForm.submit()
                 .cookies(loginFormResponse.cookies())
                 .followRedirects(true)
-                .load()
+                .execute()
 
-            return Session(loginResult)
+            return Session(LoadedPage(loginResponse, loginResponse.parse()))
         }
     }
 }
