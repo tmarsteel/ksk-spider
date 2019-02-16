@@ -81,7 +81,10 @@ class Session private constructor(
         rangeSelectorInputs[1].`val`(to.format(dateFormatter))
 
         var loadForm = rangeSelectorContainer.parent("form") as FormElement
-        val updatePageBtn = loadForm.selectFirst("#exportGroup").parent().selectFirst("div:first-of-type input[type=submit]")
+        val exportGroup = loadForm.selectFirst("#exportGroup")
+            ?: return Stream.empty() // if there are no transactions in the selected time range, this element is missing
+
+        val updatePageBtn = exportGroup.parent().selectFirst("div:first-of-type input[type=submit]")
         currentPage = loadForm.submitByClicking(updatePageBtn)
             .cookies(cookies)
             .followRedirects(true)
