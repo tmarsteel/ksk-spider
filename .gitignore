@@ -1,10 +1,9 @@
 # IntelliJ
-.idea
+.idea/
 *.iml
 
-# Gradle
-.gradle
-/build/
+# Maven
+target
 
 gradle-app.setting
 !gradle-wrapper.jar
