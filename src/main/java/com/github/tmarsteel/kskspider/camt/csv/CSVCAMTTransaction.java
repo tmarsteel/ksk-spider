@@ -6,9 +6,12 @@ import org.csveed.annotations.CsvCell;
 import org.csveed.annotations.CsvConverter;
 import org.csveed.annotations.CsvFile;
 import org.csveed.bean.ColumnIndexMapper;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Currency;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Maps one line of CSV-CAMT as obtained from the export feature
@@ -23,7 +26,7 @@ public class CSVCAMTTransaction {
     @CsvConverter(converter = LocalDateConverter.class)
     private LocalDate postedAt;
 
-    @CsvCell(columnIndex = 3, required = true)
+    @CsvCell(columnIndex = 3)
     @CsvConverter(converter = LocalDateConverter.class)
     private LocalDate valuedAt;
 
@@ -71,11 +74,12 @@ public class CSVCAMTTransaction {
         this.postedAt = postedAt;
     }
 
+    @Nullable
     public LocalDate getValuedAt() {
         return valuedAt;
     }
 
-    public void setValuedAt(LocalDate valuedAt) {
+    public void setValuedAt(@Nullable LocalDate valuedAt) {
         this.valuedAt = valuedAt;
     }
 
@@ -87,71 +91,82 @@ public class CSVCAMTTransaction {
         this.comment = comment;
     }
 
+    @Nullable
     public String getPurpose() {
         return purpose;
     }
 
-    public void setPurpose(String purpose) {
+    public void setPurpose(@Nullable String purpose) {
         this.purpose = purpose;
     }
 
+    @Nullable
     public String getCreditor() {
         return creditor;
     }
 
-    public void setCreditor(String creditor) {
+    public void setCreditor(@Nullable String creditor) {
         this.creditor = creditor;
     }
 
+    @Nullable
     public String getMandateReference() {
         return mandateReference;
     }
 
-    public void setMandateReference(String mandateReference) {
+    public void setMandateReference(@Nullable String mandateReference) {
         this.mandateReference = mandateReference;
     }
 
+    @Nullable
     public String getEndToEndCustomerReference() {
         return endToEndCustomerReference;
     }
 
-    public void setEndToEndCustomerReference(String endToEndCustomerReference) {
+    public void setEndToEndCustomerReference(@Nullable String endToEndCustomerReference) {
         this.endToEndCustomerReference = endToEndCustomerReference;
     }
 
+    @Nullable
     public String getPartnerName() {
         return partnerName;
     }
 
-    public void setPartnerName(String partnerName) {
+    public void setPartnerName(@Nullable String partnerName) {
         this.partnerName = partnerName;
     }
 
+    @Nullable
     public AccountIdentifier getPartnerAccountID() {
         return partnerAccountID;
     }
 
-    public void setPartnerAccountID(AccountIdentifier partnerAccountID) {
+    public void setPartnerAccountID(@Nullable AccountIdentifier partnerAccountID) {
         this.partnerAccountID = partnerAccountID;
     }
 
+    @Nullable
     public String getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(@Nullable String amount) {
         this.amount = amount;
     }
 
+    @Nullable
     public String getCurrencyCode() {
         return currencyCode;
     }
 
-    public void setCurrencyCode(String currencyCode) {
+    public void setCurrencyCode(@Nullable String currencyCode) {
         this.currencyCode = currencyCode;
     }
 
     public MoneyAmount getMoneyAmount() {
+        requireNonNull(amount);
+        requireNonNull(currencyCode);
+
         long cents = Long.parseLong(amount.replaceAll("[^\\d-]", ""));
         Currency currency = Currency.getInstance(currencyCode);
 

@@ -20,9 +20,9 @@ data class TransactionDTO(
         @JvmStatic
         fun fromCAMT(tx: CSVCAMTTransaction) = TransactionDTO(
             tx.postedAt,
-            tx.valuedAt,
+            tx.valuedAt ?: tx.postedAt,
             tx.ownerIBAN,
-            tx.partnerAccountID,
+            tx.partnerAccountID!!,
             tx.partnerName,
             tx.moneyAmount,
             tx.purpose,
